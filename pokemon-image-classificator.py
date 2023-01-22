@@ -42,28 +42,35 @@ def sample_image(gen, batch_s=batch_size, model=None, label_d=label_dict):
 
     return
 
-sample_image(gen=train_gen)
+
+# sample_image(gen=train_gen)
 
 # create a CNN classifier
 # add batch normalization, stride, dropout
 
 i = Input(shape=(220, 220, 3))
 
-conv = Conv2D(filters=128, kernel_size=3, activation='relu')(i)
-pool = MaxPool2D()(conv)
+x = Conv2D(filters=128, kernel_size=3, activation='relu')(i)
+x = MaxPool2D()(x)
+# x = BatchNormalization()(x)
 
-conv = Conv2D(filters=128, kernel_size=3, activation='relu')(pool)
-pool = MaxPool2D()(conv)
+x = Conv2D(filters=128, kernel_size=3,  activation='relu')(x)
+x = MaxPool2D()(x)
+# x = BatchNormalization()(x)
 
-conv = Conv2D(filters=128, kernel_size=3, activation='relu')(pool)
-pool = MaxPool2D()(conv)
+x = Conv2D(filters=128, kernel_size=3, activation='relu')(x)
+x = MaxPool2D()(x)
+# x = BatchNormalization()(x)
 
-conv = Conv2D(filters=128, kernel_size=3, activation='relu')(pool)
-pool = MaxPool2D()(conv)
+x = Conv2D(filters=128, kernel_size=3, activation='relu')(x)
+x = MaxPool2D()(x)
+# x = BatchNormalization()(x)
 
-flat = Flatten()(pool)
-x = Dense(1024, activation='relu')(flat)
+x = Flatten()(x)
+x = Dense(1024, activation='relu')(x)
+x = Dropout(0.3)(x)
 x = Dense(512, activation='relu')(x)
+x = Dropout(0.3)(x)
 x = Dense(len(train_gen.class_indices), activation='softmax')(x)  # 150 classes
 
 cnn = Model(i, x)
@@ -73,12 +80,9 @@ cnn.summary()
 
 es = EarlyStopping(monitor='val_loss', patience=3)
 
-
 cnn.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 r = cnn.fit_generator(generator=train_gen, epochs=50, steps_per_epoch=train_gen.samples // batch_size,
-                  shuffle=True, validation_data=test_gen, verbose=1, callbacks=[es])
-
-test_gen.next(50)
+                      shuffle=True, validation_data=test_gen, verbose=1, callbacks=[es])
 
 # model training plots
 
@@ -96,10 +100,10 @@ sample_image(gen=test_gen, model=cnn)
 
 # test the model
 
-yhat = cnn.predict_generator(test_gen, test_gen.samples // batch_size+1)
+yhat = cnn.predict_generator(test_gen, test_gen.samples // batch_size + 1)
 yhat = np.argmax(yhat, axis=1)
 
-# print as a heatmap
+# print as a heatmap with labels
 print(confusion_matrix(test_gen.classes, yhat))
 
 # something is wrong here TODO
@@ -107,23 +111,9 @@ print(classification_report(test_gen.classes, yhat))
 
 with open('report.txt', 'a+') as f:
     f.write(
-        f"""
-        
-        \n model name: {input("model name: ")}
-        \n val_loss: {r.history['val_loss']}
-        \n val_accuracy" {r.history['val_accuracy']}
-
-        """
-
-    )
+        f""" \n
+model name: {input("model name: ")}
+val_loss: {np.round(r.history['val_loss'][-1], 4)}
+val_accuracy" {np.round(r.history['val_accuracy'][-1], 4)} """)
 
 # visualize filters and feature maps
-
-
-
-
-
-
-
-
-
