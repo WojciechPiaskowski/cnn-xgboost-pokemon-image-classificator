@@ -50,27 +50,27 @@ def sample_image(gen, batch_s=batch_size, model=None, label_d=label_dict):
 
 i = Input(shape=(220, 220, 3))
 
-x = Conv2D(filters=128, kernel_size=3, activation='relu')(i)
-x = MaxPool2D()(x)
+x = Conv2D(filters=32, kernel_size=(3, 3), strides=2, activation='relu')(i)
+# x = MaxPool2D()(x)
 # x = BatchNormalization()(x)
 
-x = Conv2D(filters=128, kernel_size=3,  activation='relu')(x)
-x = MaxPool2D()(x)
+x = Conv2D(filters=64, kernel_size=(3, 3), strides=2,  activation='relu')(x)
+# x = MaxPool2D()(x)
 # x = BatchNormalization()(x)
 
-x = Conv2D(filters=128, kernel_size=3, activation='relu')(x)
-x = MaxPool2D()(x)
+x = Conv2D(filters=128, kernel_size=(3, 3), strides=2, activation='relu')(x)
+# x = MaxPool2D()(x)
 # x = BatchNormalization()(x)
 
-x = Conv2D(filters=128, kernel_size=3, activation='relu')(x)
+x = Conv2D(filters=256, kernel_size=(3, 3), strides=2, activation='relu')(x)
 x = MaxPool2D()(x)
 # x = BatchNormalization()(x)
 
 x = Flatten()(x)
 x = Dense(1024, activation='relu')(x)
-x = Dropout(0.3)(x)
+x = Dropout(0.5)(x)
 x = Dense(512, activation='relu')(x)
-x = Dropout(0.3)(x)
+x = Dropout(0.5)(x)
 x = Dense(len(train_gen.class_indices), activation='softmax')(x)  # 150 classes
 
 cnn = Model(i, x)
