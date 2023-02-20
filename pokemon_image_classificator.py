@@ -1,15 +1,17 @@
 import sys
+import keras.models
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import sklearn.metrics
 import tensorflow as tf
 from keras.preprocessing.image import ImageDataGenerator
 from keras.layers import Conv2D, MaxPool2D, BatchNormalization, Flatten, Dense, Dropout, Input, LeakyReLU
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, log_loss, f1_score, accuracy_score
 
 batch_size = 32
 
@@ -55,19 +57,19 @@ def sample_image(gen, batch_s=batch_size, model=None, label_d=label_dict):
 
 i = Input(shape=(220, 220, 3))
 
-x = Conv2D(filters=32, kernel_size=(3, 3), strides=2, activation='relu')(i)
+x = Conv2D(filters=32, kernel_size=(3, 3), strides=(2, 2), activation='relu')(i)
 # x = MaxPool2D()(x)
 # x = BatchNormalization()(x)
 
-x = Conv2D(filters=64, kernel_size=(3, 3), strides=2, activation='relu')(x)
+x = Conv2D(filters=64, kernel_size=(3, 3), strides=(2, 2), activation='relu')(x)
 # x = MaxPool2D()(x)
 # x = BatchNormalization()(x)
 
-x = Conv2D(filters=128, kernel_size=(3, 3), strides=2, activation='relu')(x)
+x = Conv2D(filters=128, kernel_size=(3, 3), strides=(2, 2), activation='relu')(x)
 # x = MaxPool2D()(x)
 # x = BatchNormalization()(x)
 
-x = Conv2D(filters=256, kernel_size=(3, 3), strides=2, activation='relu')(x)
+x = Conv2D(filters=256, kernel_size=(3, 3), strides=(2, 2), activation='relu')(x)
 x = MaxPool2D()(x)
 # x = BatchNormalization()(x)
 
@@ -99,31 +101,13 @@ plt.plot(r.history['accuracy'], label='accuracy')
 plt.plot(r.history['val_accuracy'], label='val_accuracy')
 plt.legend()
 
-# test examples (create a function out of sampling above)
+# save CNN model
+cnn.save('models/cnn')
 
-sample_image(gen=test_gen, model=cnn)
+# load CNN model
+cnn = keras.models.load_model('models/cnn')
 
-
-
-
-# test the model
-
-test_gen.reset()
-
-scores = cnn.evaluate(test_gen)
-print("%s%s: %.2f%%" % ("evaluate ", cnn.metrics_names[1], scores[1]*100))
-
-
-yhat = cnn.predict_generator(test_gen, test_gen.samples // batch_size + 1)
-yhat = np.argmax(yhat, axis=1)
-
-# print as a heatmap with labels
-cf = confusion_matrix(test_gen.classes, yhat)
-sns.heatmap(cf)
-
-# something is wrong here
-print(classification_report(test_gen.classes, yhat))
-
+# save results
 with open('report.txt', 'a+') as f:
     f.write(
         f""" \n
@@ -131,4 +115,37 @@ model name: {input("model name: ")}
 val_loss: {np.round(r.history['val_loss'][-1], 4)}
 val_accuracy" {np.round(r.history['val_accuracy'][-1], 4)} """)
 
+# test examples (create a function out of sampling above)
+
+sample_image(gen=test_gen, model=cnn)
+
+
+# test the model
+
+def test_model(model_name):
+
+    yhat_proba = model_name.predict_generator(test_gen, test_gen.samples // batch_size + 1)
+    yhat = np.argmax(yhat_proba, axis=1)
+
+    print(f'accuracy: {np.round(accuracy_score(test_gen.classes, yhat), 2)}')
+    print(f'log loss: {np.round(log_loss(test_gen.classes, yhat_proba), 2)}')
+    print(f'F1 score: {np.round(f1_score(test_gen.classes, yhat, average="macro"), 2)}')
+
+    return yhat_proba, yhat
+
+
+yhat_proba, yhat = test_model(cnn)
+
+# print as a heatmap with labels
+cf = confusion_matrix(test_gen.classes, yhat)
+sns.heatmap(cf)
+print(classification_report(test_gen.classes, yhat))
+
 # visualize filters and feature maps
+
+
+
+# xgboost classifier after CNN feature extraction
+
+mid_model = Model(cnn.input, cnn.get_layer('dense').output)
+mid_model.summary()
