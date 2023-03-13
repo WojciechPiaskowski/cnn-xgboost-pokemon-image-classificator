@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import sklearn.metrics
+from sklearn.preprocessing import LabelEncoder
 import tensorflow as tf
 from keras.preprocessing.image import ImageDataGenerator
 from keras.layers import Conv2D, MaxPool2D, BatchNormalization, Flatten, Dense, Dropout, Input, LeakyReLU
@@ -155,7 +156,8 @@ mid_model.summary()
 
 # create a training dataset for xgboost out of imagedategenerator batches and CNN feature extraction
 
-for i in range(100):
+n = 3000
+for i in range(n):
 
     if i == 0:
         x_train_xgb, y_train_xgb = train_gen.next()
@@ -170,6 +172,7 @@ for i in range(100):
         x_train_xgb = np.concatenate((x_train_xgb, x_train_xgb2), axis=0)
         y_train_xgb = np.concatenate((y_train_xgb, y_train_xgb2), axis=0)
 
+    print(f'{i}/{n}')
 
 test_gen.reset()
 for i in range(41):
@@ -187,28 +190,23 @@ for i in range(41):
         x_test_xgb = np.concatenate((x_test_xgb, x_test_xgb2), axis=0)
         y_test_xgb = np.concatenate((y_test_xgb, y_test_xgb2), axis=0)
 
-
-
-
-xgb = XGBClassifier(objective='multi:softprob', num_class=150)
-
-
-from sklearn.preprocessing import LabelEncoder
+    print(f'{i}/41')
 
 le = LabelEncoder()
 y_train_xgb = le.fit_transform(y_train_xgb)
 
-xgb.fit(x_train_xgb, y_train_xgb)
 
+xgb = XGBClassifier(objective='multi:softprob', num_class=150, eval_metric=['mlogloss', 'merror'],
+                    learning_rate=0.2, max_depth=3, n_estimators=300,
+                    min_child_weight=50, reg_lambda=5,
+                    early_stopping_rounds=6)
 
-
+xgb.fit(x_train_xgb, y_train_xgb,
+        eval_set=((x_train_xgb, y_train_xgb), (x_test_xgb, y_test_xgb)))
 
 
 yhat_xgb = xgb.predict(x_test_xgb)
 accuracy_score(y_test_xgb, yhat_xgb)
 
 
-
-import numpy as np
-
-np.random.randint(1, 3, 5)
+# 55.3
