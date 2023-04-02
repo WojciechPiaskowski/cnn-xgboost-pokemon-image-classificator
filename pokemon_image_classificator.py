@@ -11,7 +11,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.layers import Conv2D, MaxPool2D, BatchNormalization, Flatten, Dense, Dropout, Input, LeakyReLU
 from keras.models import Model
 from keras.optimizers import SGD
-from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, log_loss, f1_score, accuracy_score
 from xgboost import XGBClassifier
 
@@ -57,8 +57,6 @@ def sample_image(gen, batch_s=batch_size, model=None, label_d=label_dict):
 # sample_image(gen=train_gen)
 
 # create a CNN classifier
-# add batch normalization, stride, dropout
-
 i = Input(shape=(220, 220, 3))
 
 x = Conv2D(filters=32, kernel_size=(3, 3), strides=(2, 2), activation='relu')(i)
@@ -74,7 +72,7 @@ x = Conv2D(filters=128, kernel_size=(3, 3), strides=(2, 2), activation='relu')(x
 # x = BatchNormalization()(x)
 
 x = Conv2D(filters=256, kernel_size=(3, 3), strides=(2, 2), activation='relu')(x)
-x = MaxPool2D()(x)
+# x = MaxPool2D()(x)
 # x = BatchNormalization()(x)
 
 x = Flatten()(x)
@@ -89,11 +87,13 @@ cnn = Model(i, x)
 # summary
 cnn.summary()
 
-es = EarlyStopping(monitor='val_loss', patience=3)
+# early stopping and model checkpoint callbacks
+es = EarlyStopping(monitor='val_loss', patience=5)
+checkpoint = ModelCheckpoint('models/cnn/', save_best_only=True)
 
 cnn.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-r = cnn.fit_generator(generator=train_gen, epochs=50, steps_per_epoch=train_gen.samples // batch_size,
-                      shuffle=True, validation_data=test_gen, verbose=1, callbacks=[es])
+r = cnn.fit_generator(generator=train_gen, epochs=100, steps_per_epoch=train_gen.samples // batch_size,
+                      shuffle=True, validation_data=test_gen, verbose=1, callbacks=[es, checkpoint])
 
 # model training plots
 
@@ -124,7 +124,7 @@ val_accuracy" {np.round(r.history['val_accuracy'][-1], 4)} """)
 sample_image(gen=test_gen, model=cnn)
 
 
-# test the model
+# test the model TODO: TESTING!!
 
 def test_model(model_name):
 
@@ -150,12 +150,10 @@ print(classification_report(test_gen.classes, yhat))
 
 
 # xgboost classifier after CNN feature extraction
-
 mid_model = Model(cnn.input, cnn.get_layer('dense').output)
 mid_model.summary()
 
 # create a training dataset for xgboost out of imagedategenerator batches and CNN feature extraction
-
 n = 3000
 for i in range(n):
 
