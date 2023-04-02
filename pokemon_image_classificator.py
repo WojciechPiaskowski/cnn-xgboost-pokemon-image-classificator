@@ -1,4 +1,6 @@
 import sys
+
+import joblib
 import keras.models
 import numpy as np
 import pandas as pd
@@ -14,6 +16,7 @@ from keras.optimizers import SGD
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, log_loss, f1_score, accuracy_score
 from xgboost import XGBClassifier
+
 
 batch_size = 32
 
@@ -125,6 +128,7 @@ sample_image(gen=test_gen, model=cnn)
 
 
 # test the model TODO: TESTING!!
+# tes change
 
 def test_model(model_name):
 
