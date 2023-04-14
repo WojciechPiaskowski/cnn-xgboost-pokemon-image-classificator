@@ -61,16 +61,17 @@ r = cnn.fit_generator(generator=train_gen, epochs=100, steps_per_epoch=train_gen
                       shuffle=True, validation_data=test_gen, verbose=1, callbacks=[es, checkpoint])
 
 # model training plots
+# fix charts
 
-plt.plot(r.history['loss'], label='loss')
-plt.plot(r.history['val_loss'], label='val_loss')
-plt.legend()
-plt.show()
-
-plt.plot(r.history['accuracy'], label='accuracy')
-plt.plot(r.history['val_accuracy'], label='val_accuracy')
-plt.legend()
-plt.show()
+# plt.plot(r.history['loss'], label='loss')
+# plt.plot(r.history['val_loss'], label='val_loss')
+# plt.legend()
+# plt.show()
+#
+# plt.plot(r.history['accuracy'], label='accuracy')
+# plt.plot(r.history['val_accuracy'], label='val_accuracy')
+# plt.legend()
+# plt.show()
 
 joblib.dump(generator, 'other/image_gen.pkl')
 

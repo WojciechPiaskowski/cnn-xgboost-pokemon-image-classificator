@@ -71,7 +71,7 @@ xgb = XGBClassifier(objective='multi:softprob', num_class=150, eval_metric=['mlo
 
 # fit the generated dataset to the XGB model
 xgb.fit(x_train_xgb, y_train_xgb,
-        eval_set=(x_test_xgb, y_test_xgb))
+        eval_set=[(x_test_xgb, y_test_xgb)])
 
 # save the model object
 joblib.dump(xgb, 'models/xgb/xgb.pkl')
