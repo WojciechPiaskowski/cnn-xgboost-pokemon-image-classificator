@@ -101,5 +101,9 @@ def test_models():
 
 test_models()
 
+# joblib.dump(cnn, 'models/cnnpkl/cnn.pkl')
+
+# need to retrain CNN / is corrupted
+# fix the issue with CNN being saved on GIT
 # top N predictions correct way of scoring ???
 # feature maps
