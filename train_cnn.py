@@ -1,4 +1,7 @@
+import matplotlib as mpl
+mpl.use('Qt5Agg')
 import matplotlib.pyplot as plt
+import  tensorflow as tf
 from keras.preprocessing.image import ImageDataGenerator
 from keras.layers import Conv2D, Flatten, Dense, Dropout, Input, LeakyReLU
 from keras.models import Model
@@ -54,7 +57,7 @@ cnn.summary()
 
 # early stopping and model checkpoint callbacks
 es = EarlyStopping(monitor='val_loss', patience=5)
-checkpoint = ModelCheckpoint('models/cnn/', save_best_only=True)
+checkpoint = ModelCheckpoint('models/cnn/checkpoint', save_best_only=True)
 
 cnn.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 r = cnn.fit_generator(generator=train_gen, epochs=100, steps_per_epoch=train_gen.samples // batch_size,
@@ -62,16 +65,17 @@ r = cnn.fit_generator(generator=train_gen, epochs=100, steps_per_epoch=train_gen
 
 # model training plots
 # fix charts
+fig = plt.figure()
+plt.plot(r.history['loss'], label='loss')
+plt.plot(r.history['val_loss'], label='val_loss')
+plt.legend()
+plt.show()
 
-# plt.plot(r.history['loss'], label='loss')
-# plt.plot(r.history['val_loss'], label='val_loss')
-# plt.legend()
-# plt.show()
-#
-# plt.plot(r.history['accuracy'], label='accuracy')
-# plt.plot(r.history['val_accuracy'], label='val_accuracy')
-# plt.legend()
-# plt.show()
+fig = plt.figure()
+plt.plot(r.history['accuracy'], label='accuracy')
+plt.plot(r.history['val_accuracy'], label='val_accuracy')
+plt.legend()
+plt.show()
 
 joblib.dump(generator, 'other/image_gen.pkl')
-
+cnn.save('models/cnn/cnn.h5')

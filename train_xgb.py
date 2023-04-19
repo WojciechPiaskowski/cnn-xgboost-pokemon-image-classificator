@@ -15,7 +15,7 @@ test_gen = generator.flow_from_directory('PokemonData/', target_size=(220, 220),
                                          shuffle=False)
 
 # load the CNN model
-cnn = keras.models.load_model('models/cnn')
+cnn = keras.models.load_model('models/cnn/cnn.h5')
 
 # extract the CNN layers required for feature extraction before passing it through to XGBoostClassifier
 mid_model = Model(cnn.input, cnn.get_layer('dense').output)
