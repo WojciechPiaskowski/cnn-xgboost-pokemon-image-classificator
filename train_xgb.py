@@ -23,7 +23,7 @@ mid_model.summary()
 
 # I was unable to feed the image generator data directly to CNN->XGB, so I generate the training data 'manually'
 # create a training dataset for xgboost out of imagedategenerator batches and CNN feature extraction
-n = 1000
+n = 2000
 for i in range(n):
 
     if i == 0:

@@ -5,6 +5,7 @@ from tensorflow import keras
 from keras.models import Model
 from sklearn.metrics import accuracy_score, log_loss, f1_score
 import matplotlib as mpl
+from download_cnn import download_cnn
 
 mpl.use('Qt5Agg')
 import matplotlib.pyplot as plt
@@ -22,8 +23,13 @@ test_gen = generator.flow_from_directory('PokemonData/', target_size=(220, 220),
 label_dict = train_gen.class_indices
 label_dict = {value: key for key, value in label_dict.items()}
 
-# load CNN and XGBoost models
-cnn = keras.models.load_model('models/cnn')
+# load CNN (if it exists, else download it) and XGBoost models
+try:
+    cnn = keras.models.load_model('models/cnn/cnn.h5')
+except OSError:
+    download_cnn()
+    cnn = keras.models.load_model('models/cnn/cnn.h5')
+
 mid_model = Model(cnn.input, cnn.get_layer('dense').output)
 xgb = joblib.load('models/xgb/xgb.pkl')
 
@@ -103,7 +109,6 @@ test_models()
 
 # joblib.dump(cnn, 'models/cnnpkl/cnn.pkl')
 
-# need to retrain CNN / is corrupted
-# fix the issue with CNN being saved on GIT
 # top N predictions correct way of scoring ???
+# tunowanie xgboosta
 # feature maps
