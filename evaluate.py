@@ -3,7 +3,7 @@ import numpy as np
 import joblib
 from tensorflow import keras
 from keras.models import Model
-from sklearn.metrics import accuracy_score, log_loss, f1_score
+from sklearn.metrics import accuracy_score, log_loss, f1_score, top_k_accuracy_score
 import matplotlib as mpl
 from download_cnn import download_cnn
 
@@ -67,10 +67,10 @@ def sample_image(gen, batch_s=batch_size, label_d=label_dict):
 
 sample_image(gen=test_gen)
 
-
 def test_models():
 
     test_gen.reset()
+    y = test_gen.classes
     cnn_yhat_proba = cnn.predict_generator(test_gen, test_gen.samples // batch_size + 1)
     cnn_yhat = np.argmax(cnn_yhat_proba, axis=1)
 
@@ -93,22 +93,27 @@ def test_models():
     xgb_yhat_proba = xgb.predict_proba(x_test_xgb)
     xgb_yhat = np.argmax(xgb_yhat_proba, axis=1)
 
-    print(f'CNN accuracy: {np.round(accuracy_score(test_gen.classes, cnn_yhat), 2)}')
-    print(f'XGB-CNN accuracy: {np.round(accuracy_score(test_gen.classes, xgb_yhat), 2)}')
+    print(f'CNN top 1 accuracy: {np.round(accuracy_score(y, cnn_yhat), 2)}')
+    print(f'XGB-CNN top 1 accuracy: {np.round(accuracy_score(y, xgb_yhat), 2)}')
     print('')
-    print(f'CNN log loss: {np.round(log_loss(test_gen.classes, cnn_yhat_proba), 2)}')
-    print(f'XGB-CNN log loss: {np.round(log_loss(test_gen.classes, xgb_yhat_proba), 2)}')
+    print(f'CNN top 3 accuracy: {np.round(top_k_accuracy_score(y, cnn_yhat_proba, k=3), 2)}')
+    print(f'XGB-CNN top 3 accuracy: {np.round(top_k_accuracy_score(y, xgb_yhat_proba, k=3), 2)}')
     print('')
-    print(f'CNN F1 score: {np.round(f1_score(test_gen.classes, cnn_yhat, average="macro"), 2)}')
-    print(f'XGB-CNN F1 score: {np.round(f1_score(test_gen.classes, xgb_yhat, average="macro"), 2)}')
+    print(f'CNN top 5 accuracy: {np.round(top_k_accuracy_score(y, cnn_yhat_proba, k=5), 2)}')
+    print(f'XGB-CNN top 5 accuracy: {np.round(top_k_accuracy_score(y, xgb_yhat_proba, k=5), 2)}')
+    print('')
+    print(f'CNN log loss: {np.round(log_loss(y, cnn_yhat_proba), 2)}')
+    print(f'XGB-CNN log loss: {np.round(log_loss(y, xgb_yhat_proba), 2)}')
+    print('')
+    print(f'CNN F1 score: {np.round(f1_score(y, cnn_yhat, average="macro"), 2)}')
+    print(f'XGB-CNN F1 score: {np.round(f1_score(y, xgb_yhat, average="macro"), 2)}')
 
     return
 
 
 test_models()
 
-# joblib.dump(cnn, 'models/cnnpkl/cnn.pkl')
-
-# top N predictions correct way of scoring ???
 # tunowanie xgboosta
 # feature maps
+# cleaning
+# readme.md
