@@ -105,8 +105,8 @@ def test_models():
     print(f'CNN top 5 accuracy: {np.round(top_k_accuracy_score(y, cnn_yhat_proba, k=5), 2)}')
     print(f'XGB-CNN top 5 accuracy: {np.round(top_k_accuracy_score(y, xgb_yhat_proba, k=5), 2)}')
     print('')
-    print(f'CNN log loss: {np.round(log_loss(y, cnn_yhat_proba), 2)}')
-    print(f'XGB-CNN log loss: {np.round(log_loss(y, xgb_yhat_proba), 2)}')
+    print(f'CNN log loss: {np.round(log_loss(y, cnn_yhat_proba), 2)}')  # 1 61
+    print(f'XGB-CNN log loss: {np.round(log_loss(y, xgb_yhat_proba), 2)}') # 1 83
     print('')
     print(f'CNN F1 score: {np.round(f1_score(y, cnn_yhat, average="macro"), 2)}')
     print(f'XGB-CNN F1 score: {np.round(f1_score(y, xgb_yhat, average="macro"), 2)}')
